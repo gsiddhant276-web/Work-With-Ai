@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#7c3aed">
+<title>My School</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#09090f;color:#fff;font-family:Arial,sans-serif;padding-bottom:76px}
+body.light{background:#f5f5fa;color:#111}
+.appbar{position:sticky;top:0;z-index:20;padding:14px 16px;background:#09090fee;backdrop-filter:blur(12px);border-bottom:1px solid #29293a}
+.light .appbar{background:#ffffffeF}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.logo{font-weight:900;font-size:21px}.logo span{color:#a78bfa}
+main{max-width:900px;margin:auto;padding:16px}
+.page{display:none}.page.active{display:block}
+.hero{padding:16px 2px}.hero h1,.hero h2{margin:0 0 7px;font-size:28px}
+.muted,small{color:#aaa}
+.card{background:#12121c;border:1px solid #29293a;border-radius:17px;padding:15px;margin-bottom:13px}
+.light .card{background:#fff;border-color:#ddd}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.subject,.quick{border:1px solid #29293a;background:#151522;color:inherit;border-radius:15px;padding:17px 8px;text-align:center}
+.light .subject,.light .quick{background:#f0f0f7;color:#111}
+.subject .emoji{display:block;font-size:28px;margin-bottom:7px}
+button{font:inherit;cursor:pointer}
+.icon,.btn{border:0;border-radius:11px;padding:11px 14px}
+.icon{background:#171722;color:#fff;border:1px solid #29293a}
+.btn{background:#7c3aed;color:#fff;font-weight:bold}
+.danger{background:#991b1b}.green{background:#166534}.secondary{background:#252536}
+input,textarea,select{width:100%;padding:12px;border-radius:11px;border:1px solid #29293a;background:#09090f;color:#fff;outline:0}
+.light input,.light textarea,.light select{background:#fff;color:#111;border-color:#ddd}
+label{display:block;font-size:13px;color:#aaa;margin:0 0 6px}.field{margin-bottom:12px}
+.actions{display:flex;gap:7px;margin-top:12px;flex-wrap:wrap}
+.actions .btn{flex:1;min-width:100px}
+.search{display:flex;gap:8px;margin-bottom:12px}.search input{flex:1}
+.item-title{font-weight:800;font-size:17px}
+.desc{color:#aaa;white-space:pre-wrap;margin-top:7px;line-height:1.4}
+.meta{font-size:12px;color:#999;margin-top:8px}
+.item img{width:100%;max-height:280px;object-fit:contain;border-radius:11px;background:#000;margin-top:10px}
+.done{opacity:.55}.done .item-title{text-decoration:line-through}
+.badge{display:inline-block;padding:5px 8px;border-radius:8px;font-size:11px;font-weight:bold}
+.today{background:#7c2d12}.overdue{background:#7f1d1d}.future{background:#172554}.finished{background:#14532d}
+.progress{height:9px;background:#272735;border-radius:20px;overflow:hidden;margin-top:9px}
+.fill{height:100%;background:linear-gradient(90deg,#7c3aed,#c084fc)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{text-align:center;padding:13px;border:1px solid #29293a;border-radius:13px}
+.stat b{display:block;font-size:21px;color:#a78bfa}
+.empty{text-align:center;color:#aaa;padding:25px}
+.rem{padding:11px;border:1px solid #29293a;border-radius:11px;margin-bottom:7px}
+.rem small{display:block;margin-top:4px}
+.quickgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.quick{padding:10px}
+.chat{height:390px;overflow:auto;background:#050509;border:1px solid #29293a;border-radius:14px;padding:9px;margin:10px 0}
+.msg{max-width:88%;padding:10px 12px;border-radius:13px;margin:7px 0;white-space:pre-wrap;line-height:1.45;font-size:14px}
+.msg.ai{background:#171322;border:1px solid #30244b}.msg.user{background:#4c1d95;margin-left:auto}
+.airow{display:flex;gap:8px}.airow input{flex:1}
+.nav{position:fixed;bottom:0;left:0;right:0;height:70px;background:#09090ff5;backdrop-filter:blur(15px);border-top:1px solid #29293a;display:grid;grid-template-columns:repeat(5,1fr);z-index:30}
+.light .nav{background:#ffffffeF}
+.nav button{background:transparent;border:0;color:#999;font-size:10px}
+.nav span{display:block;font-size:21px;margin-bottom:3px}.nav .active{color:#a78bfa}
+.toast{display:none;position:fixed;z-index:100;left:50%;bottom:85px;transform:translateX(-50%);background:#181827;color:#fff;padding:11px 15px;border-radius:11px;border:1px solid #333}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,1fr)}.quickgrid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header class="appbar"><div class="row"><div class="logo">My <span>School</span></div><button id="theme" class="icon">🌙</button></div></header>
+  
+<section id="home" class="page active">
+<div class="hero"><h1>👋 Welcome!</h1><p class="muted">Your work, revision, notes and reminders in one place.</p></div>
+<div class="card"><b>📊 Overall Progress</b><div class="progress"><div id="overallFill" class="fill" style="width:0%"></div></div><div id="overallText" class="muted" style="margin-top:6px">0%</div></div>
+<div class="card"><b>🔔 Reminders</b><div id="reminders" style="margin-top:10px"></div></div>
+<div class="card"><b>📊 Quick Stats</b><div class="stats" style="margin-top:10px">
+<div class="stat"><b id="workCount">0</b><small>Work</small></div>
+<div class="stat"><b id="revCount">0</b><small>Revision</small></div>
+<div class="stat"><b id="noteCount">0</b><small>Notes</small></div>
+</div></div>
+</section>
+  <section id="revision" class="page"><div class="hero"><h2>🧠 REVISION</h2><p class="muted">Choose a subject.</p></div><div id="revisionSubjects" class="grid"></div></section>
+  <section id="notes" class="page">
+<div class="hero"><h2>📒 NOTES</h2><p class="muted">Save important information.</p></div>
+<div class="card">
+<div class="field"><label>Title</label><input id="noteTitle" placeholder="Example: Maths formulas"></div>
+<div class="field"><label>Note</label><textarea id="noteText" placeholder="Write your note..."></textarea></div>
+<button id="addNote" class="btn">➕ SAVE NOTE</button>
+</div>
+<div class="search"><input id="noteSearch" placeholder="🔎 Search notes..."></div><div id="notesList"></div>
+</section>
+
+<section id="ai" class="page">
+<div class="hero"><h2>🤖 AI Assistant</h2><p class="muted">Offline • No API • No internet.</p></div>
+<div class="card">
+<div class="quickgrid">
+<button class="quick" data-ai="Make me a revision plan">🧠 Revision</button>
+<button class="quick" data-ai="Give me exam tips">📝 Exam Tips</button>
+<button class="quick" data-ai="Make me a timetable">⏰ Timetable</button>
+<button class="quick" data-ai="How much work is pending?">📚 My Work</button>
+<button class="quick" data-ai="Give me motivation">🔥 Motivation</button>
+<button class="quick" data-ai="Help me with English">🇬🇧 English</button>
+<button class="quick" data-ai="Help me with Maths">🔢 Maths</button>
+<button class="quick" data-ai="What should I do today?">📅 Today</button>
+</div>
+<div id="chat" class="chat"><div class="msg ai">👋 Hi! I'm your offline school assistant.<br><br>Ask me about work, revision, exams, timetable, Maths, English, Science, progress or motivation.</div></div>
+<div class="airow"><input id="aiInput" placeholder="Ask me anything..."><button id="sendAI" class="btn">➤</button></div>
+</div>
+</section>
+
+<section id="detail" class="page">
+<button id="back" class="btn secondary">← Back</button>
+<div class="hero"><h2 id="detailTitle"></h2><p id="detailSub" class="muted"></p></div>
+<div class="card">
+<div class="field"><label>Title</label><input id="itemTitle" placeholder="Example: Maths Worksheet"></div>
+<div class="field"><label>Description</label><textarea id="itemDesc" placeholder="Write details..."></textarea></div>
+<div class="field"><label>Date</label><input id="itemDate" type="date"></div>
+<div class="field"><label>🖼️ Upload Image</label><input id="itemImage" type="file" accept="image/*"></div>
+<button id="addItem" class="btn">➕ ADD</button>
+</div>
+<div class="search"><input id="itemSearch" placeholder="🔎 Search..."><select id="itemFilter"><option value="all">All</option><option value="pending">Pending</option><option value="done">Completed</option></select></div>
+<div id="subjectProgress"></div><div id="itemsList"></div>
+</section>
+</main>
+
+<nav class="nav">
+<button data-page="home" class="active"><span>🏠</span>HOME</button>
+<button data-page="work"><span>📚</span>WORK</button>
+<button data-page="revision"><span>🧠</span>REVISION</button>
+<button data-page="notes"><span>📒</span>NOTES</button>
+<button data-page="ai"><span>🤖</span>AI</button>
+</nav>
+<div id="toast" class="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+  const SUBJECTS=[
+["English","🇬🇧"],["Hindi","🇮🇳"],["Maths","🔢"],["Science","🔬"],
+["Sanskrit","🕉️"],["SST","🌍"],["Other","📖"]
+];
+
+const blank=()=>Object.fromEntries(SUBJECTS.map(s=>[s[0],[]]));
+let state={work:blank(),revision:blank(),notes:[]};
+let currentType="work",currentSubject="Maths",backPage="work";
+
+function load(){
+ try{
+  const x=JSON.parse(localStorage.getItem("mySchoolData")||"null");
+  if(x){
+   state.work=Object.assign(blank(),x.work||{});
+   state.revision=Object.assign(blank(),x.revision||{});
+   state.notes=Array.isArray(x.notes)?x.notes:[];
+  }
+  if(localStorage.getItem("mySchoolTheme")==="light")document.body.classList.add("light");
+ }catch(e){console.error(e)}
+}
+function save(){
+ try{localStorage.setItem("mySchoolData",JSON.stringify(state))}
+ catch(e){toast("⚠️ Storage is full. Try a smaller image.")}
+}
+function esc(s){
+ return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+}
+function today(){
+ const d=new Date();
+ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function dateText(d){
+ if(!d)return "";
+ const p=d.split("-");
+ return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:d;
+}
+function toast(s){
+ const t=document.getElementById("toast");
+ t.textContent=s;t.style.display="block";
+ clearTimeout(window._toast);
+ window._toast=setTimeout(()=>t.style.display="none",2200);
+}
+function all(type){
+ return SUBJECTS.flatMap(s=>
+  (Array.isArray(state[type][s[0]])?state[type][s[0]]:[]).map(x=>({...x,subject:s[0],type:type==="work"?"WORK":"REVISION"}))
+ );
+}
+
+function navigate(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ window.scrollTo(0,0);
+ renderHome();renderSubjects();renderNotes();
+}
+
+document.querySelectorAll(".nav button").forEach(b=>{
+ b.addEventListener("click",()=>navigate(b.dataset.page));
+});
+
+document.getElementById("theme").addEventListener("click",()=>{
+ document.body.classList.toggle("light");
+ localStorage.setItem("mySchoolTheme",document.body.classList.contains("light")?"light":"dark");
+ document.getElementById("theme").textContent=document.body.classList.contains("light")?"☀️":"🌙";
+});
+
+function renderSubjects(){
+ const make=(type)=>SUBJECTS.map(s=>{
+  const list=Array.isArray(state[type][s[0]])?state[type][s[0]]:[];
+  const pending=list.filter(x=>!x.done).length;
+  return `<button class="subject" data-open="${type}" data-subject="${esc(s[0])}">
+  <span class="emoji">${s[1]}</span><b>${esc(s[0])}</b><br><small>${pending} pending</small></button>`;
+ }).join("");
+ document.getElementById("workSubjects").innerHTML=make("work");
+ document.getElementById("revisionSubjects").innerHTML=make("revision");
+ document.querySelectorAll("[data-open]").forEach(b=>{
+  b.addEventListener("click",()=>openDetail(b.dataset.open,b.dataset.subject));
+ });
+}
+
+function openDetail(type,subject){
+ currentType=type;currentSubject=subject;backPage=type;
+ const found=SUBJECTS.find(x=>x[0]===subject);
+ const emoji=found?found[1]:"📖";
+ document.getElementById("detailTitle").textContent=emoji+" "+subject;
+ document.getElementById("detailSub").textContent=type==="work"?"Add and manage your work.":"Add and manage your revision.";
+ document.getElementById("itemTitle").value="";
+ document.getElementById("itemDesc").value="";
+ document.getElementById("itemDate").value="";
+ document.getElementById("itemImage").value="";
+ document.getElementById("itemSearch").value="";
+ document.getElementById("itemFilter").value="all";
+ navigate("detail");renderItems();
+}
+document.getElementById("back").addEventListener("click",()=>navigate(backPage));
+
+function compress(file){
+ return new Promise((resolve,reject)=>{
+  const r=new FileReader();
+  r.onload=e=>{
+   const im=new Image();
+   im.onload=()=>{
+    const max=1200;
+    let w=im.width,h=im.height;
+    if(w>max){h=h*max/w;w=max}
+    if(h>max){w=w*max/h;h=max}
+    const c=document.createElement("canvas");
+    c.width=Math.max(1,Math.round(w));c.height=Math.max(1,Math.round(h));
+    const ctx=c.getContext("2d");
+    ctx.drawImage(im,0,0,c.width,c.height);
+    resolve(c.toDataURL("image/jpeg",.72));
+   };
+   im.onerror=reject;
+   im.src=e.target.result;
+  };
+  r.onerror=reject;
+  r.readAsDataURL(file);
+ });
+}
+
+document.getElementById("addItem").addEventListener("click",async()=>{
+ const title=document.getElementById("itemTitle").value.trim();
+ if(!title){toast("⚠️ Enter a title first.");return}
+ let image="";
+ const file=document.getElementById("itemImage").files[0];
+ if(file){
+  try{image=await compress(file)}
+  catch(e){toast("❌ Image could not be read.");return}
+ }
+ if(!Array.isArray(state[currentType][currentSubject]))state[currentType][currentSubject]=[];
+ state[currentType][currentSubject].push({
+  id:Date.now()+Math.random(),
+  title:title,
+  desc:document.getElementById("itemDesc").value.trim(),
+  date:document.getElementById("itemDate").value,
+  image:image,
+  done:false
+ });
+ save();
+ document.getElementById("itemTitle").value="";
+ document.getElementById("itemDesc").value="";
+ document.getElementById("itemDate").value="";
+ document.getElementById("itemImage").value="";
+ renderItems();renderHome();renderSubjects();toast("✅ Added!");
+});
+
+function badge(item){
+ if(item.done)return '<span class="badge finished">✅ DONE</span>';
+ if(!item.date)return "";
+ if(item.date===today())return '<span class="badge today">🔥 TODAY</span>';
+ if(item.date<today())return '<span class="badge overdue">⚠️ OVERDUE</span>';
+ return '<span class="badge future">📅 '+dateText(item.date)+'</span>';
+      }
+
+  function renderItems(){
+ const box=document.getElementById("itemsList");
+ const search=(document.getElementById("itemSearch").value||"").toLowerCase();
+ const filter=document.getElementById("itemFilter").value;
+ const source=Array.isArray(state[currentType][currentSubject])?state[currentType][currentSubject]:[];
+ const a=source.filter(x=>
+  (!search||(String(x.title)+" "+String(x.desc)).toLowerCase().includes(search)) &&
+  (filter==="all"||(filter==="pending"&&!x.done)||(filter==="done"&&x.done))
+ );
+ const done=source.filter(x=>x.done).length;
+ const pct=source.length?Math.round(done/source.length*100):0;
+ document.getElementById("subjectProgress").innerHTML=
+ `<div class="card"><b>📊 Progress</b><div class="progress"><div class="fill" style="width:${pct}%"></div></div><small>${done}/${source.length} completed — ${pct}%</small></div>`;
+ if(!a.length){
+  box.innerHTML='<div class="card empty">📭 Nothing here yet.</div>';
+  return;
+ }
+ box.innerHTML=a.slice().reverse().map(x=>`
+ <div class="card item ${x.done?"done":""}">
+  <div class="row"><div class="item-title">${esc(x.title)}</div><div>${badge(x)}</div></div>
+  ${x.desc?`<div class="desc">${esc(x.desc)}</div>`:""}
+  ${x.date?`<div class="meta">📅 ${dateText(x.date)}</div>`:""}
+  ${x.image?`<img src="${x.image}" alt="Uploaded image">`:""}
+  <div class="actions">
+   <button class="btn green" data-toggle="${x.id}">${x.done?"↩️ Undo":"✅ Complete"}</button>
+   <button class="btn danger" data-delete="${x.id}">🗑️ Delete</button>
+  </div>
+ </div>`).join("");
+
+ box.querySelectorAll("[data-toggle]").forEach(b=>{
+  b.addEventListener("click",()=>changeItem(Number(b.dataset.toggle),true));
+ });
+ box.querySelectorAll("[data-delete]").forEach(b=>{
+  b.addEventListener("click",()=>changeItem(Number(b.dataset.delete),false));
+ });
+}
+
+function changeItem(id,toggle){
+ const a=state[currentType][currentSubject];
+ const i=a.findIndex(x=>x.id===id);
+ if(i<0)return;
+ if(toggle){
+  a[i].done=!a[i].done;
+  toast(a[i].done?"✅ Completed!":"↩️ Pending.");
+ }else{
+  if(!confirm("Delete this item?"))return;
+  a.splice(i,1);toast("🗑️ Deleted.");
+ }
+ save();renderItems();renderHome();renderSubjects();
+}
+document.getElementById("itemSearch").addEventListener("input",renderItems);
+document.getElementById("itemFilter").addEventListener("change",renderItems);
+
+function renderHome(){
+ const w=all("work"),r=all("revision");
+ const total=w.length+r.length;
+ const done=w.filter(x=>x.done).length+r.filter(x=>x.done).length;
+ const pct=total?Math.round(done/total*100):0;
+ document.getElementById("overallFill").style.width=pct+"%";
+ document.getElementById("overallText").textContent=pct+"% complete — "+done+"/"+total;
+ document.getElementById("workCount").textContent=w.length;
+ document.getElementById("revCount").textContent=r.length;
+ document.getElementById("noteCount").textContent=state.notes.length;
+ const rem=[...w,...r].filter(x=>!x.done&&x.date)
+  .sort((a,b)=>a.date.localeCompare(b.date)).slice(0,10);
+ document.getElementById("reminders").innerHTML=rem.length?
+ rem.map(x=>`<div class="rem"><b>${x.type==="WORK"?"📚":"🧠"} ${esc(x.title)}</b><small>${esc(x.subject)} • ${x.date===today()?"🔥 TODAY":x.date<today()?"⚠️ OVERDUE":"📅 "+dateText(x.date)}</small></div>`).join("")
+ :'<div class="empty">🎉 No pending reminders!</div>';
+}
+
+document.getElementById("addNote").addEventListener("click",()=>{
+ const title=document.getElementById("noteTitle").value.trim();
+ const text=document.getElementById("noteText").value.trim();
+ if(!title&&!text){toast("⚠️ Write a note first.");return}
+ state.notes.push({id:Date.now()+Math.random(),title:title,text:text});
+ save();
+ document.getElementById("noteTitle").value="";
+ document.getElementById("noteText").value="";
+ renderNotes();renderHome();toast("📒 Note saved!");
+});
+document.getElementById("noteSearch").addEventListener("input",renderNotes);
+
+function renderNotes(){
+ const q=(document.getElementById("noteSearch").value||"").toLowerCase();
+ const a=state.notes.filter(x=>(String(x.title)+" "+String(x.text)).toLowerCase().includes(q)).slice().reverse();
+ document.getElementById("notesList").innerHTML=a.length?
+ a.map(x=>`<div class="card"><b>${esc(x.title||"Untitled")}</b><div class="desc">${esc(x.text)}</div><div class="actions"><button class="btn danger" data-note="${x.id}">🗑️ Delete</button></div></div>`).join("")
+ :'<div class="card empty">📒 No notes found.</div>';
+ document.querySelectorAll("[data-note]").forEach(b=>{
+  b.addEventListener("click",()=>{
+   if(confirm("Delete this note?")){
+    state.notes=state.notes.filter(x=>x.id!==Number(b.dataset.note));
+    save();renderNotes();renderHome();
+   }
+  });
+ });
+}
+
+function sendAI(){
+ const input=document.getElementById("aiInput");
+ const q=input.value.trim();
+ if(!q)return;
+ addMsg(q,"user");
+ input.value="";
+ setTimeout(()=>addMsg(ai(q),"ai"),120);
+}
+function addMsg(text,type){
+ const d=document.createElement("div");
+ d.className="msg "+type;
+ d.textContent=text;
+ const c=document.getElementById("chat");
+ c.appendChild(d);
+ c.scrollTop=c.scrollHeight;
+}
+document.getElementById("sendAI").addEventListener("click",sendAI);
+document.getElementById("aiInput").addEventListener("keydown",e=>{
+ if(e.key==="Enter"){e.preventDefault();sendAI()}
+});
+document.querySelectorAll("[data-ai]").forEach(b=>{
+ b.addEventListener("click",()=>{
+  document.getElementById("aiInput").value=b.dataset.ai;
+  sendAI();
+ });
+});
+
+function ai(q0){
+ const q=q0.toLowerCase().trim();
+
+ if(/^(hi|hello|hey|hii|namaste)\b/.test(q)){
+  return "👋 Hi! I'm your offline school assistant.\n\nAsk me about WORK, REVISION, exams, timetable, Maths, English, Science, progress or motivation.";
+ }
+
+ if(q.includes("pending")||q.includes("homework")||q.includes("my work")){
+  const a=all("work"),p=a.filter(x=>!x.done);
+  return `📚 WORK STATUS\n\nTotal: ${a.length}\n✅ Completed: ${a.length-p.length}\n⏳ Pending: ${p.length}\n\n${p.slice(0,8).map((x,i)=>`${i+1}. ${x.title} — ${x.subject}`).join("\n")||"🎉 No pending work!"}`;
+ }
+
+ if(q.includes("revision")||q.includes("revise")){
+  const a=all("revision"),p=a.filter(x=>!x.done);
+  return `🧠 REVISION STATUS\n\nTotal: ${a.length}\n✅ Revised: ${a.length-p.length}\n⏳ Remaining: ${p.length}\n\n${p.slice(0,8).map((x,i)=>`${i+1}. ${x.title} — ${x.subject}`).join("\n")||"🎉 All saved revision is complete!"}`;
+ }
+
+ if(q.includes("today")||q.includes("what should i do")){
+  const a=[...all("work"),...all("revision")]
+   .filter(x=>!x.done&&x.date&&x.date<=today())
+   .sort((a,b)=>a.date.localeCompare(b.date));
+  return a.length?
+   "📅 TODAY'S PRIORITIES\n\n"+a.slice(0,8).map((x,i)=>
+   `${i+1}. ${x.type==="WORK"?"📚":"🧠"} ${x.title} — ${x.subject} • ${x.date<today()?"⚠️ OVERDUE":"🔥 TODAY"}`
+   ).join("\n")
+   :"📅 You have no overdue or today's dated tasks. Check WORK and REVISION for your next task.";
+ }
+
+ if(q.includes("exam")||q.includes("test")){
+  return "📝 EXAM PLAN\n\n1️⃣ Review important topics.\n2️⃣ Practise questions.\n3️⃣ Check mistakes.\n4️⃣ Revise formulas and definitions.\n5️⃣ Do one final quick review.\n\n⏱️ Use focused study sessions with short breaks.";
+ }
+
+ if(q.includes("timetable")||q.includes("schedule")){
+  return "⏰ SIMPLE STUDY TIMETABLE\n\n4:00–4:30 → Rest + snack\n4:30–5:15 → 📚 Homework\n5:15–5:30 → Break\n5:30–6:15 → 🧠 Revision\n6:15–6:30 → Break\n6:30–7:00 → ✍️ Practise questions\n7:00 onward → Dinner + relax\n\nYou can change the times to match your school routine.";
+ }
+
+ if(q.includes("math")||q.includes("algebra")||q.includes("fraction")||q.includes("geometry")){
+  return "🔢 MATHS HELP\n\n• Read the question carefully.\n• Write the given information.\n• Choose the correct formula or method.\n• Solve step by step.\n• Check your final answer.\n\nIf you give me a Maths question, I can explain the steps.";
+ }
+
+ if(q.includes("english")||q.includes("grammar")||q.includes("noun")||q.includes("verb")||q.includes("tense")){
+  return "🇬🇧 ENGLISH HELP\n\nQuick grammar checklist:\n• Noun = name of a person, place, animal or thing.\n• Verb = action/state word.\n• Adjective = describes a noun.\n• Adverb = describes a verb/adjective/adverb.\n• Tense tells when an action happens.\n\nSend me a sentence or grammar question for help.";
+ }
+
+ if(q.includes("science")){
+  return "🔬 SCIENCE HELP\n\nFor Science revision:\n1. Learn important definitions.\n2. Understand diagrams.\n3. Remember examples.\n4. Practise short and long answers.\n5. Review mistakes.\n\nAsk me about a Science topic and I can give you a simple explanation.";
+ }
+
+ if(q.includes("hindi")){
+  return "🇮🇳 HINDI HELP\n\nFor Hindi revision, practise:\n• शब्दार्थ\n• प्रश्न-उत्तर\n• व्याकरण\n• पर्यायवाची और विलोम\n• पाठ का मुख्य भाव\n\nSend the Hindi question and I can help explain it.";
+ }
+
+ if(q.includes("sanskrit")){
+  return "🕉️ SANSKRIT HELP\n\nFor Sanskrit revision:\n• Learn शब्दार्थ.\n• Practise शब्दरूप and धातुरूप when included in your syllabus.\n• Read sentences carefully.\n• Revise translations.\n• Practise grammar regularly.";
+ }
+
+ if(q.includes("sst")||q.includes("social science")||q.includes("history")||q.includes("geography")||q.includes("civics")){
+  return "🌍 SST HELP\n\nTry this method:\n1. Read the topic once.\n2. Make 5 key points.\n3. Learn important names, dates or places.\n4. Practise map/diagram work when needed.\n5. Answer questions without looking at the book.";
+ }
+
+ if(q.includes("motivat")||q.includes("tired")||q.includes("lazy")){
+  return "🔥 KEEP GOING!\n\nYou don't need to finish everything at once.\n\nJust pick ONE small task, work for 20–25 minutes, then take a short break.\n\nSmall progress every day = big progress over time. 💪📚";
+                                                    }
+
+  if(q.includes("progress")||q.includes("percentage")||q.includes("how much")){
+  const w=all("work"),r=all("revision"),n=state.notes.length;
+  const total=w.length+r.length;
+  const done=w.filter(x=>x.done).length+r.filter(x=>x.done).length;
+  const pct=total?Math.round(done/total*100):0;
+  return `📊 YOUR PROGRESS\n\n📚 Work: ${w.filter(x=>x.done).length}/${w.length} completed\n🧠 Revision: ${r.filter(x=>x.done).length}/${r.length} completed\n📒 Notes: ${n}\n\n⭐ Overall: ${pct}%`;
+ }
+
+ if(q.includes("note")){
+  return `📒 NOTES\n\nYou currently have ${state.notes.length} saved note${state.notes.length===1?"":"s"}.\n\nOpen NOTES to read, search or delete them.`;
+ }
+
+ if(q.includes("thank")||q.includes("thanks")){
+  return "😊 You're welcome! Keep learning and keep going. 💜";
+ }
+
+ return "🤖 I work offline, so I use built-in school help rather than a cloud AI.\n\nTry asking:\n• How much work is pending?\n• Make me a revision plan\n• What should I do today?\n• Give me exam tips\n• Make me a timetable\n• Help me with Maths\n• Help me with English\n• Give me motivation";
+}
+
+load();
+document.getElementById("theme").textContent=document.body.classList.contains("light")?"☀️":"🌙";
+renderHome();
+renderSubjects();
+renderNotes();
+
+})();
+</script>
+</body>
+</html>
+
